@@ -1,6 +1,6 @@
 
 var socket = io('http://localhost:1337/');
-
+var delivery = new Delivery(socket);
 var connected = false;
 var user = "";
 var resp;
@@ -28,6 +28,18 @@ socket.on('login_response', function(data){
             views[i].document.getElementById('status').innerHTML = user + " " + resp;
             views[i].displayLogin('none');
         }
+        // should now download file!
+
+        delivery.on('receive.start',function(fileUID){
+            console.log('receiving a file!');
+        });
+
+        delivery.on('receive.success',function(file){
+            console.log(file.text());
+            // if (file.isImage()) {
+            //     $('img').attr('src', file.dataURL());
+            // }
+        });
     }
     console.log(resp);
 });
