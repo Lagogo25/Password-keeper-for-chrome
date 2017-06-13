@@ -1,0 +1,55 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+<head>
+    <title>Password keeper's Popup</title>
+    <style>
+        body {
+            font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+            font-size: 70%;
+        }
+        #status {
+            /* avoid an excessively wide status text */
+            white-space: pre;
+            text-overflow: ellipsis;
+            overflow: visible;
+            max-width: 800px;
+        }
+    </style>
+
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
+      - First run the stanford javascript crypto library
+      - Then we can use sjcl in our popup
+     -->
+    <!--
+    <script src="socket.io.js"></script>
+    -->
+    <script src="popup.js"></script>
+</head>
+<!--
+  - The body should be the login/sign up/log out box!
+  -->
+<body>
+<h3 style="white-space: nowrap">Password keeper</h3>
+<div id="user-box" hidden>
+    <p id=for-test">User name:</p> <input id="user-name" type="text">
+</div>
+<div id="pass-box" hidden>
+    <p>Password:</p> <input id="user-password" type="password">
+</div>
+<p id="buttons" hidden>
+    <button id="sign-in">Sign in</button>    <button id="sign-up">Sign up</button>
+</p>
+<button id="log-out" hidden>Log out</button>
+<p id="status" style="text-align: center">Please sign in or sign up</p>
+</body>
+</html>
+

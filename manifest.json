@@ -1,0 +1,22 @@
+{
+  "manifest_version": 2,
+
+  "name": "Password Keeper by LR",
+  "description": "This extension saves your websites passwords for you!",
+  "version": "1.0",
+
+  "background": {
+    "page": "background.html",
+    "persistent": true
+  },
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html",
+    "default_title": "Password keeper"
+  },
+
+  "permissions": [
+    "activeTab", "background"
+  ]
+}
