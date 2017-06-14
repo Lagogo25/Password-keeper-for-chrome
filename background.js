@@ -5,6 +5,18 @@ var connected = false;
 var user = "";
 var resp;
 
+delivery.on('receive.start',function(fileUID){
+    console.log('receiving a file!');
+});
+
+delivery.on('receive.success',function(file){
+    console.log("receive success!");
+    console.log(file.text());
+    // if (file.isImage()) {
+    //     $('img').attr('src', file.dataURL());
+    // }
+});
+
 socket.on('server_ready', function (data) {
     chrome.runtime.onMessage.addListener(function(msg){
         user = msg.user;
@@ -21,7 +33,7 @@ socket.on('login_response', function(data){
     });
     for (var i = 0; i < views.length; i++) {
         views[i].document.getElementById('status').innerHTML = resp;
-    }
+    // }
     if (resp === "signed in") {
         connected = true;
         for (var i = 0; i < views.length; i++) {
@@ -30,16 +42,6 @@ socket.on('login_response', function(data){
         }
         // should now download file!
 
-        delivery.on('receive.start',function(fileUID){
-            console.log('receiving a file!');
-        });
-
-        delivery.on('receive.success',function(file){
-            console.log(file.text());
-            // if (file.isImage()) {
-            //     $('img').attr('src', file.dataURL());
-            // }
-        });
     }
     console.log(resp);
 });
