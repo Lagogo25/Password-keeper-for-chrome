@@ -33,7 +33,7 @@ socket.on('login_response', function(data){
     });
     for (var i = 0; i < views.length; i++) {
         views[i].document.getElementById('status').innerHTML = resp;
-    // }
+    }
     if (resp === "signed in") {
         connected = true;
         for (var i = 0; i < views.length; i++) {
