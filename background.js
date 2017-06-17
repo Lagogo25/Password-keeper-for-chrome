@@ -27,8 +27,9 @@ socket.on('server_ready', function (data) {
                 socket.emit(req, {fileName: fileName, content: fileContent});
                 chrome.runtime.reload();
                 break;
-            case "add_to_file":
-                console.log("got the message!");
+            case "fetch_details":
+                // should check no input password exists!
+                console.log(msg.details);
                 break;
         }
     });
@@ -84,39 +85,20 @@ socket.on('register_response', function(data){
 /*
 Now comes the actual password keeping business!!
  */
+
 // maybe add this functionality when signing in so that the current tab already load credentials?
 chrome.tabs.onActivated.addListener(function(activeInfo){ // launch whenever we switch tab
     var tabId = activeInfo.tabId;
     if (connected) {
         chrome.tabs.executeScript(tabId, {
-            code: '' +
-            'var html = document.body.outerHTML;' +
-            'chrome.runtime.sendMessage({request: "add_to_file", });' +
-            ''
+            file: "content.js"
         });
     }
-    // chrome.tabs.onUpdated.addListener(function(tabId, info) { // launch when tab is loaded
-    //     if (info.status === 'complete') {
-    //         if (connected) {
-    //             chrome.tabs.executeScript(tabId, {
-    //                 code: '' +
-    //                 'alert(document.body.outerHTML);' +
-    //                 ''
-    //             });
-    //         }
-    //     }
-    // });
 });
 
-
-
 // chrome.tabs.query({active: true, lastFocusedWindow: true}, function (tabs) {
-//     // tabs[0] is the current actibe tab
+//     // tabs[0] is the current active tab
 //     if (connected) {
 //         console.log(tabs[0].url);
 //     }
-// });
-
-// chrome.tabs.getCurrent(function(tab){
-//
 // });
