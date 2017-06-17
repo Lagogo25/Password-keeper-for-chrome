@@ -17,6 +17,9 @@
   },
 
   "permissions": [
-    "activeTab", "background"
+    "tabs",
+    "<all_urls>",
+    "background",
+    "storage"
   ]
 }

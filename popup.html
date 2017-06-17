@@ -11,10 +11,8 @@
         body {
             font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
             font-size: 70%;
-        }
-        #status {
-            /* avoid an excessively wide status text */
-            white-space: pre;
+            width: 140px;
+            word-wrap: break-word;
             text-overflow: ellipsis;
             overflow: visible;
             max-width: 800px;
@@ -40,7 +38,7 @@
 <body>
 <h3 style="white-space: nowrap">Password keeper</h3>
 <div id="user-box" hidden>
-    <p id=for-test">User name:</p> <input id="user-name" type="text">
+    <p>User name:</p> <input id="user-name" type="text">
 </div>
 <div id="pass-box" hidden>
     <p>Password:</p> <input id="user-password" type="password">
@@ -48,8 +46,7 @@
 <p id="buttons" hidden>
     <button id="sign-in">Sign in</button>    <button id="sign-up">Sign up</button>
 </p>
-<button id="log-out" hidden>Log out</button>
-<p id="status" style="text-align: center">Please sign in or sign up</p>
+<p id="status">Please sign in or sign up.</p>
+<button id="sign-out" hidden>Sign out</button>
 </body>
 </html>
-
