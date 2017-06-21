@@ -38,9 +38,24 @@ function checkValid(user, password){
 
 var background_page = chrome.extension.getBackgroundPage();
 
+
+
 document.addEventListener('DOMContentLoaded', function() {
     if (!background_page.connected) {
         displayLogin('block');
+        document.getElementById("user-name").addEventListener("keyup", function (event) {
+            if (event.keyCode === 13) {
+                // event.preventDefault();
+                document.getElementById("user-password").focus();
+            }
+        });
+
+        document.getElementById("user-password").addEventListener("keyup", function (event) {
+            if (event.keyCode === 13){
+                // event.preventDefault();
+                document.getElementById("sign-in").click();
+            }
+        });
         document.getElementById("sign-in").onclick = function () {
             document.getElementById("sign-in").disabled = true;
             var uname = document.getElementById("user-name").value;
@@ -84,21 +99,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
     }
-
-    document.getElementById("user-name").addEventListener("keyup", function (event) {
-        // event.preventDefault();
-        if (event.keyCode === 13) {
-            // alert("enter was pressed!");
-            document.getElementById("user-password").focus();
-        }
-    });
-
-    document.getElementById("user-password").addEventListener("keyup", function (event) {
-        // event.preventDefault();
-        if (event.keyCode === 13){
-            document.getElementById("sign-in").click();
-        }
-    });
 });
 
 
