@@ -10,7 +10,10 @@ function parentForm(elem){
         elem = elem.parentNode;
     }
 }
-
+var fileContent;
+chrome.storage.local.get(['fileContent'], function(items){
+    fileContent = items.fileContent;
+});
 // var html = document.body.outerHTML; // page full HTML. no need in that...
 var url = document.URL.split("/"); // will NEED to use to save to file
 url = url[0] + "//" + url[2] + "/"; // url[1] = '' !!! (http:// or https://)
@@ -61,6 +64,51 @@ else {
                     // should send details to background, which then should check if new page has no password fields!
                     chrome.runtime.sendMessage({request: "fetch_details", details: details});
                 });
+                // should auto fill form!!!
+                if (fileContent) {
+                    // alert(JSON.stringify(fileContent) + "\n" + url + "\t\t" + parent.id + "\t\t" + i); // just to see that it works!
+                    if (fileContent && fileContent[url] && fileContent[url][parent.id]) {
+                        var users = fileContent[url][parent.id];
+                        //alert(JSON.stringify(users));
+                        var inputs = parent.querySelectorAll("input[type=text], input[type=email], input[type=password]"); // all inputs in form which are text/email
+                        for (var j = 0; j < Object.keys(inputs).length - 1; j++) {
+                            if (inputs[j].type !== 'password' && inputs[j + 1].type === 'password') {
+                                // should add list to type, and then autofill by the selection
+                                // if (Object.keys(users).length === 1){
+                                //     // only one user is saved! fantastic!
+                                //     var uname = Object.keys(users)[0];
+                                //     inputs[j].value = uname;
+                                //     inputs[j+1].value = users[uname];
+                                // }
+                                // else{
+                                // more than one user is saved. create a drop box!
+                                var dlist = document.createElement("DATALIST");
+                                dlist.setAttribute("id", "datalist");
+                                parent.appendChild(dlist);
+                                for (var usr in users) {
+                                    var children = document.getElementById("datalist").children;
+                                    var child;
+                                    for (child = 0; child < children.length; child++) {
+                                        if (children[child].value === usr)
+                                            break;
+                                    }
+                                    if (child !== children.length)
+                                        continue; // means usr is already an option!
+                                    var option = document.createElement("OPTION");
+                                    option.setAttribute("value", usr);
+                                    document.getElementById("datalist").appendChild(option);
+                                }
+                                inputs[j].setAttribute("list", "datalist");
+                                inputs[j].onblur = function () {
+                                    if (users[inputs[j].value])
+                                        inputs[j + 1].value = users[inputs[j].value];
+                                };
+                                // }
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
