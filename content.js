@@ -10,17 +10,18 @@ function parentForm(elem){
         elem = elem.parentNode;
     }
 }
+
 var fileContent;
+
 chrome.storage.local.get(['fileContent'], function(items){
     fileContent = items.fileContent;
 });
-// var html = document.body.outerHTML; // page full HTML. no need in that...
+
+
 var url = document.URL.split("/"); // will NEED to use to save to file
 url = url[0] + "//" + url[2] + "/"; // url[1] = '' !!! (http:// or https://)
 var passwords = document.querySelectorAll("input[type=password]"); // all input fields of type password in page
 if (Object.keys(passwords).length === 0){
-    // alert("no passwords!");
-    //console.log("no passwords!");
     chrome.runtime.sendMessage({request: 'save_details', url: url});
 }
 else {
@@ -49,10 +50,10 @@ else {
                         for (var k = 0; k < parents.length; k++) {
                             if (parents[k] !== parent) {
                                 inputs = parents[k].querySelectorAll("input[type=text], input[type=email], input[type=password]"); // all inputs in form which are text/email
-                                for (var j = 0; j < Object.keys(inputs).length - 1; j++) {
-                                    if (inputs[j].type !== 'password' && inputs[j + 1].type === 'password') {
-                                        uname = inputs[j].value;
-                                        password = inputs[j + 1].value;
+                                for (var l = 0; l < Object.keys(inputs).length - 1; l++) {
+                                    if (inputs[l].type !== 'password' && inputs[l + 1].type === 'password') {
+                                        uname = inputs[l].value;
+                                        password = inputs[l + 1].value;
                                         parent_id = parents[k].id;
                                         break;
                                     }
@@ -73,15 +74,6 @@ else {
                         var inputs = parent.querySelectorAll("input[type=text], input[type=email], input[type=password]"); // all inputs in form which are text/email
                         for (var j = 0; j < Object.keys(inputs).length - 1; j++) {
                             if (inputs[j].type !== 'password' && inputs[j + 1].type === 'password') {
-                                // should add list to type, and then autofill by the selection
-                                // if (Object.keys(users).length === 1){
-                                //     // only one user is saved! fantastic!
-                                //     var uname = Object.keys(users)[0];
-                                //     inputs[j].value = uname;
-                                //     inputs[j+1].value = users[uname];
-                                // }
-                                // else{
-                                // more than one user is saved. create a drop box!
                                 var dlist = document.createElement("DATALIST");
                                 dlist.setAttribute("id", "datalist");
                                 parent.appendChild(dlist);
@@ -99,11 +91,11 @@ else {
                                     document.getElementById("datalist").appendChild(option);
                                 }
                                 inputs[j].setAttribute("list", "datalist");
+                                inputs[j].focus();
                                 inputs[j].onblur = function () {
                                     if (users[inputs[j].value])
                                         inputs[j + 1].value = users[inputs[j].value];
                                 };
-                                // }
                                 break;
                             }
                         }

@@ -39,7 +39,6 @@ function checkValid(user, password){
 var background_page = chrome.extension.getBackgroundPage();
 
 
-
 document.addEventListener('DOMContentLoaded', function() {
     if (!background_page.connected) {
         displayLogin('block');
@@ -91,14 +90,34 @@ document.addEventListener('DOMContentLoaded', function() {
         // should add a sign out option (will send file to server and return to default)
         // on sign out should send file to server, disconnect, and change connected to false (chrome.runtime.reload()?)
         document.getElementById('status').innerHTML = background_page.user + " signed in.";
-        document.getElementById('sign-out').onclick = function () {
-            // should send file to server
-            chrome.runtime.sendMessage({
-                // should send file to server (will happen in background)
-                request: 'update_server'
-            });
+        document.getElementById("sign-out").onclick = function() {
+            if (background_page.connected) {
+                background_page.connected = false;
+                var content = "";
+                for (var url in background_page.fileContent) {
+                    for (var form in background_page.fileContent[url]) {
+                        for (var usr in background_page.fileContent[url][form]) {
+                            content += background_page.CryptoJS.AES.encrypt(url, background_page.password) + " " +
+                                background_page.CryptoJS.AES.encrypt(form, background_page.password) + " " +
+                                background_page.CryptoJS.AES.encrypt(usr, background_page.password) + " " +
+                                background_page.CryptoJS.AES.encrypt(background_page.fileContent[url][form][usr], background_page.password) + "\n";
+                        }
+                    }
+                }
+                background_page.socket.emit("server_update", {user: background_page.user, password: background_page.password, content: content});
+                // refresh all saved pages on sign out
+                background_page.chrome.tabs.getAllInWindow(null, function (tabs) {
+                    for (var i = 0; i < tabs.length; i++) {
+                        var tab_url = tabs[i].url.split('/');
+                        tab_url = tab_url[0] + '//' + tab_url[2] + '/';
+                        if (background_page.fileContent[tab_url])
+                            background_page.chrome.tabs.update(tabs[i].id, {url: tabs[i].url});
+                    }
+                    background_page.console.log("signed out");
+                    background_page.chrome.runtime.reload();
+                });
+            }
         };
     }
 });
-
 
