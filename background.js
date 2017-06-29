@@ -1,4 +1,7 @@
-var socket = io('http://localhost:1337/');
+
+// first thing: need to check if there is an instance of chrome-password-keeper-server running
+// if so, get it's ip and connect with socket, otherwise run a new ec2 instance of chrome-password-keeper-server
+// and once it's running, connect to it's ip and open a socket
 
 var connected = false;
 var user = "";          // use to show message for popup
@@ -15,11 +18,11 @@ var save_form = undefined;
 
 // var fileName = "";
 var fileContent = {}; // will be updated whenever needed
+var socket = io('http://54.88.99.33:1337');
 
 
 function save_details(){
     if (connected) {
-        fileContent[save_url][save_form][save_user] = save_password;
         chrome.storage.local.set({'fileContent': fileContent});
         console.log("this is fileContent: " + JSON.stringify(fileContent));
         var content = "";
@@ -41,12 +44,9 @@ function save_details(){
     }
 }
 
-// socket.on('problem', function(data){
-//     if (connected)
-//         alert("Password Keeper:\n" + data.response + "\nRestoring to last available backup");
-// });
 
 socket.on('server_ready', function (data) {
+    console.log("server is ready! you can now sign in.");
     chrome.runtime.onMessage.addListener(function(msg){
         var req = msg.request;
         switch (req){
@@ -88,6 +88,7 @@ socket.on('server_ready', function (data) {
                                                     // should alert and ask if user wants to change password!
                                                     if (confirm("There is a different password saved for this user in database. Update password?")) {
                                                         console.log("replacing password: " + fileContent[save_url][save_form][save_user] + " with password: " + save_password);
+                                                        fileContent[save_url][save_form][save_user] = save_password;
                                                         save_details();
                                                     }
                                                 }
@@ -98,6 +99,7 @@ socket.on('server_ready', function (data) {
                                             else {
                                                 // user is not yet saved!!
                                                 console.log("adding another user for site " + save_url);
+                                                fileContent[save_url][save_form][save_user] = save_password;
                                                 save_details();
                                             }
                                         }
@@ -105,6 +107,7 @@ socket.on('server_ready', function (data) {
                                             // form is not yet saved!!
                                             console.log("adding another form for site " + save_url);
                                             fileContent[save_url][save_form] = {};
+                                            fileContent[save_url][save_form][save_user] = save_password;
                                             save_details();
                                         }
                                     }
@@ -113,6 +116,7 @@ socket.on('server_ready', function (data) {
                                         console.log("This site was never saved for this user!");
                                         fileContent[save_url] = {};
                                         fileContent[save_url][save_form] = {};
+                                        fileContent[save_url][save_form][save_user] = save_password;
                                         save_details();
                                     }
                                 }
@@ -137,16 +141,16 @@ socket.on('server_ready', function (data) {
                                 save_form = undefined;
                             }
                             // else {
-                                // console.log('ERROR! msg.url: ' + msg.url + ' current_url: ' + current_url);
+                            // console.log('ERROR! msg.url: ' + msg.url + ' current_url: ' + current_url);
                             // }
                         }
                         // else{
-                            // console.log("Problem??");
+                        // console.log("Problem??");
                         // }
                     });
                 }
                 // else{
-                    // console.log("problem?");
+                // console.log("problem?");
                 // }
                 break;
         }
@@ -189,25 +193,64 @@ socket.on('login_response', function(data){
             });
         }
         else{
-            alert("Password Keeper:\nPassword file was altered!\nRestoring to last available backup");
-            chrome.storage.local.get(['fileContent'], function(items){
-                if (items && items.fileContent) {
-                    fileContent = items.fileContent; // should be the last backuped locally
-                    console.log("restored from last backup: " + JSON.stringify(fileContent));
-                    content = "";
-                    for (var url in fileContent) {
-                        for (var form in fileContent[url]) {
-                            for (var usr in fileContent[url][form]) {
-                                content += CryptoJS.AES.encrypt(url, password) + " " +
-                                    CryptoJS.AES.encrypt(form, password) + " " +
-                                    CryptoJS.AES.encrypt(usr, password) + " " +
-                                    CryptoJS.AES.encrypt(fileContent[url][form][usr], password) + "\n";
+            connected = false;
+            if (confirm("Password Keeper:\nPassword file was altered! Deleting your account.\nWould you like to save your last backup of passwords (non decrypted!!) locally?")){
+                // user wants a copy
+                chrome.storage.local.get(['fileContent'], function(items){
+                    if (items && items.fileContent) {
+                        fileContent = items.fileContent; // should be the last backuped locally
+                        console.log("restored from last backup: " + JSON.stringify(fileContent));
+                        content = "";
+                        for (var url in fileContent) {
+                            for (var form in fileContent[url]) {
+                                for (var usr in fileContent[url][form]) {
+                                    content += url + " " + form + " " + usr + " " + fileContent[url][form][usr] + "\n";
+                                }
                             }
                         }
+                        console.log("this is content: " + content);
+                        var file = new Blob([content]);
+                        var a = document.createElement("a");
+                        url = URL.createObjectURL(file);
+                        a.href = url;
+                        a.download = user + "_passwords.txt";
+                        document.body.appendChild(a);
+                        a.click();
+                        setTimeout(function() {
+                            document.body.removeChild(a);
+                            window.URL.revokeObjectURL(url);
+                        }, 0);
                     }
-                    socket.emit('update_server', {user: user, password: password, content: content}); // update server
-                }
-            });
+                    socket.emit('delete_user', {user: user, password: password});
+                    resp = "ERROR!";
+                    chrome.tabs.getAllInWindow(null, function (tabs) {
+                        for (var i = 0; i < tabs.length; i++) {
+                            var tab_url = tabs[i].url.split('/');
+                            tab_url = tab_url[0] + '//' + tab_url[2] + '/';
+                            if (fileContent[tab_url])
+                                chrome.tabs.update(tabs[i].id, {url: tabs[i].url});
+                        }
+                        console.log("Problem in server! Deleting account!");
+                        chrome.runtime.reload();
+                    });
+                });
+            }
+            else{
+                socket.emit('delete_user', {user: user, password: password});
+                resp = "ERROR!";
+                chrome.tabs.getAllInWindow(null, function (tabs) {
+                    for (var i = 0; i < tabs.length; i++) {
+                        var tab_url = tabs[i].url.split('/');
+                        tab_url = tab_url[0] + '//' + tab_url[2] + '/';
+                        if (fileContent[tab_url])
+                            chrome.tabs.update(tabs[i].id, {url: tabs[i].url});
+                    }
+                    console.log("Problem in server! Deleting account!");
+                    chrome.runtime.reload();
+                });
+                return;
+            }
+
         }
 
         for (var i = 0; i < views.length; i++) {
@@ -242,8 +285,153 @@ socket.on('login_response', function(data){
                     });
                 }
             };
+            views[i].document.getElementById("delete-account").onclick = function() {
+                if (connected){
+                    connected = false;
+                    if (confirm("Password Keeper:\nAre you sure you wish to delete your account?")){
+                        if (confirm("Password Keeper:\nWould you like to save your passwords (non decrypted!!) locally?")){
+                            // user wants a copy
+                            content = "";
+                            if (fileContent && JSON.stringify(fileContent) !== "{}"){
+                                for (var url in fileContent) {
+                                    for (var form in fileContent[url]) {
+                                        for (var usr in fileContent[url][form]) {
+                                            content += url + " " + form + " " + usr + " " + fileContent[url][form][usr] + "\n";
+                                        }
+                                    }
+                                }
+                            }
+                            console.log("this is content: " + content);
+                            var file = new Blob([content]);
+                            var a = document.createElement("a");
+                            url = URL.createObjectURL(file);
+                            a.href = url;
+                            a.download = user + "_passwords.txt";
+                            document.body.appendChild(a);
+                            a.click();
+                            setTimeout(function() {
+                                document.body.removeChild(a);
+                                window.URL.revokeObjectURL(url);
+                            }, 0);
+                            socket.emit('delete_user', {user: user, password: password});
+                            resp = "user deleted";
+                            chrome.tabs.getAllInWindow(null, function (tabs) {
+                                for (var i = 0; i < tabs.length; i++) {
+                                    var tab_url = tabs[i].url.split('/');
+                                    tab_url = tab_url[0] + '//' + tab_url[2] + '/';
+                                    if (fileContent[tab_url])
+                                        chrome.tabs.update(tabs[i].id, {url: tabs[i].url});
+                                }
+                                console.log("Account has been deleted!");
+                                alert("Password Keeper:\nYour account has been deleted!");
+                                chrome.runtime.reload();
+                            });
+                        }
+                        else{
+                            socket.emit('delete_user', {user: user, password: password});
+                            resp = "user deleted";
+                            chrome.tabs.getAllInWindow(null, function (tabs) {
+                                for (var i = 0; i < tabs.length; i++) {
+                                    var tab_url = tabs[i].url.split('/');
+                                    tab_url = tab_url[0] + '//' + tab_url[2] + '/';
+                                    if (fileContent[tab_url])
+                                        chrome.tabs.update(tabs[i].id, {url: tabs[i].url});
+                                }
+                                console.log("Account has been deleted!");
+                                alert("Password Keeper:\nYour account has been deleted!");
+                                chrome.runtime.reload();
+                            });
+                        }
+                    }
+                }
+            };
 
-            views[i].document.getElementById('sign-out').style.display = 'block';
+            views[i].document.getElementById("show-details").onclick = function () {
+                if (connected){
+                    if (fileContent && JSON.stringify(fileContent) !== "{}"){
+                        if (!views[i].document.getElementById("contentTable")){ // if table doesn't exists
+                            var table = views[i].document.createElement("TABLE");
+                            table.setAttribute("id", "contentTable");
+                            views[i].document.getElementById("table").appendChild(table);
+                            // should create table and put in element table.
+                            // table won't show passwords!! (feel as if it's safer)
+                            for (var url in fileContent){
+                                for (var form in fileContent[url]){
+                                    for (var usr in fileContent[url][form]){
+                                        var row = views[i].document.createElement("TR");
+                                        row.setAttribute("id", url + "_" + form + "_" + usr);
+                                        views[i].document.getElementById("contentTable").appendChild(row);
+                                        var url_cell = views[i].document.createElement("TD");
+                                        var url_txt = views[i].document.createTextNode(url);
+                                        url_cell.appendChild(url_txt);
+                                        views[i].document.getElementById("contable_" + form + "_" + usr).appendChild(url_cell);
+                                        var usr_cell = views[i].document.createElement("TD");
+                                        var usr_txt = views[i].document.createTextNode(usr);
+                                        usr_cell.appendChild(usr_txt);
+                                        views[i].document.getElementById("contable_" + form + "_" + usr).appendChild(usr_cell);
+                                        var delete_cell = views[i].document.createElement("TD");
+                                        var delete_button = views[i].document.createElement("BUTTON");
+                                        var delete_txt = views[i].document.createTextNode("Forget");
+                                        delete_button.appendChild(delete_txt);
+                                        delete_button.onclick = function(){
+                                            // we need to update fileContent and update server!
+                                            if (confirm("Delete " + usr + " details for " + url + "?")){
+                                                delete fileContent[url][form][usr];
+                                                if (!fileContent[url][form] || JSON.stringify(fileContent[url][form] === "{}")){
+                                                    delete fileContent[url][form];
+                                                    if (!fileContent[url] || JSON.stringify(fileContent[url] === "{}")){
+                                                        delete fileContent[url];
+                                                    }
+                                                }
+                                                save_details();
+                                            }
+                                        };
+                                        delete_button.style.background = "DARKRED";
+                                        delete_cell.appendChild(delete_button);
+                                        views[i].document.getElementById("contable_" + form + "_" + usr).appendChild(delete_cell);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else{
+                        views[i].document.getElementById("table").innerHTML = "No details to show yet!";
+                    }
+                }
+            };
+
+            views[i].document.getElementById("save-details").onclick = function () {
+                if (connected){
+                    if (confirm("Password Keeper:\nThis will save your password locally non-encrypted! (saved to your default downloads directory)")) {
+                        // user wants a copy
+                        content = "";
+                        if (fileContent && JSON.stringify(fileContent) !== "{}") {
+                            for (var url in fileContent) {
+                                for (var form in fileContent[url]) {
+                                    for (var usr in fileContent[url][form]) {
+                                        content += url + " " + form + " " + usr + " " + fileContent[url][form][usr] + "\n";
+                                    }
+                                }
+                            }
+                        }
+                        console.log("this is content: " + content);
+                        var file = new Blob([content]);
+                        var a = document.createElement("a");
+                        url = URL.createObjectURL(file);
+                        a.href = url;
+                        a.download = user + "_passwords.txt";
+                        document.body.appendChild(a);
+                        a.click();
+                        setTimeout(function () {
+                            document.body.removeChild(a);
+                            window.URL.revokeObjectURL(url);
+                        }, 0);
+                        console.log("details were saved locally by request");
+                    }
+                }
+            };
+
+            views[i].document.getElementById('buttons2').style.display = 'block';
         }
         // refresh all saved pages on sign in
         chrome.tabs.getAllInWindow(null, function (tabs) {
