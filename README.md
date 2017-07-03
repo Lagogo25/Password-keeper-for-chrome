@@ -1,6 +1,16 @@
 # Password keeper for chrome
 
-Use this chrome extension to save all of your web accounts details encrypted on a node server.
+Use this chrome extension to save all of your web accounts details encrypted on a node server running as an Amazon AWS EC2 instance.
+
+**If you wish to run locally (and not depend on my server, which is fine) you can clone my [node_server](https://github.com/Lagogo25/node_server.git) and run it. Just change the following line in background.js (line 21):**
+```
+var socket = io('http://52.23.199.193:1337');
+```
+**to:**
+```
+var socket = io('http://localhost:1337');
+```
+**Make sure to read node_server.js README to know how to run it (locally as well, since it depends on my AWS credentials right now, which you don't have).**
 
 ## Getting Started
 
@@ -8,7 +18,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+To use this extension you must be using Google Chrome browser:
 
 ```
 Google Chrome browser: https://www.google.com/chrome/browser/desktop/index.html
@@ -45,7 +55,7 @@ See also the list of [contributors](https://github.com/Lagogo25/Password-keeper-
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+All code in here is written by me. I put a lot of effort writing this so please don't be rude, if you are using it, please give some credit. (Of course all code beside the one in the imported scripts)
 
 ## Acknowledgments
 
