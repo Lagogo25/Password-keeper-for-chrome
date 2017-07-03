@@ -10,7 +10,7 @@ var socket = io('http://52.23.199.193:1337');
 ```
 var socket = io('http://localhost:1337');
 ```
-**Make sure to read node_server.js README to know how to run it.**
+**Make sure to read node_server.js README to know how to run it (locally as well, since it depends on my AWS credentials right now, which you don't have).**
 
 ## Getting Started
 
