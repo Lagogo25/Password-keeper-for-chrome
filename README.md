@@ -8,7 +8,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+To use this extension you must be using Google Chrome browser:
 
 ```
 Google Chrome browser: https://www.google.com/chrome/browser/desktop/index.html
@@ -45,7 +45,7 @@ See also the list of [contributors](https://github.com/Lagogo25/Password-keeper-
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+All code in here is written by me. I put a lot of effort writing this so please don't be rude, if you are using it, please give some credit. (Of course all code beside the one in the imported scripts)
 
 ## Acknowledgments
 
