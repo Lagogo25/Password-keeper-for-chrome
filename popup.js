@@ -116,6 +116,16 @@ function showDetails(){
 var background_page = chrome.extension.getBackgroundPage();
 
 document.addEventListener('DOMContentLoaded', function() {
+    chrome.runtime.onMessage.addListener(function (msg){
+        if (msg.request === "details_button"){
+            if (background_page.connected){
+                if (msg.x === 0)
+                    hideDetails();
+                else
+                    showDetails();
+            }
+        }
+    });
     if (!background_page.connected) {
         displayLogin('block');
         document.getElementById("user-name").addEventListener("keyup", function (event) {
@@ -160,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById("sign-up").disabled = false;
         };
     }
-    else {
+    else { // connected
         document.getElementById('buttons2').style.display = 'block';
         // we are already connected!
         // should add a sign out option (will send file to server and return to default)

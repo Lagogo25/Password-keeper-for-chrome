@@ -18,8 +18,8 @@ var save_form = undefined;
 
 // var fileName = "";
 var fileContent = {}; // will be updated whenever needed
-var socket = io('http://52.23.199.193:1337');
-
+// var socket = io('http://localhost:1337');
+var socket = io('http://184.72.209.38:1337');
 
 function save_details(){
     if (connected) {
@@ -271,7 +271,9 @@ socket.on('login_response', function(data){
                             }
                         }
                     }
+                    console.log("hi");
                     socket.emit('update_server', {user: user, password: password, content: content});
+                    console.log("hello");
                     // refresh all saved pages on sign out
                     chrome.tabs.getAllInWindow(null, function (tabs) {
                         for (var i = 0; i < tabs.length; i++) {
@@ -346,58 +348,14 @@ socket.on('login_response', function(data){
                 }
             };
 
+            var x = 0; // for counting show-details clicks
             views[i].document.getElementById("show-details").onclick = function () {
-                if (connected){
-                    if (fileContent && JSON.stringify(fileContent) !== "{}"){
-                        if (!views[i].document.getElementById("contentTable")){ // if table doesn't exists
-                            var table = views[i].document.createElement("TABLE");
-                            table.setAttribute("id", "contentTable");
-                            views[i].document.getElementById("table").appendChild(table);
-                            // should create table and put in element table.
-                            // table won't show passwords!! (feel as if it's safer)
-                            for (var url in fileContent){
-                                for (var form in fileContent[url]){
-                                    for (var usr in fileContent[url][form]){
-                                        var row = views[i].document.createElement("TR");
-                                        row.setAttribute("id", url + "_" + form + "_" + usr);
-                                        views[i].document.getElementById("contentTable").appendChild(row);
-                                        var url_cell = views[i].document.createElement("TD");
-                                        var url_txt = views[i].document.createTextNode(url);
-                                        url_cell.appendChild(url_txt);
-                                        views[i].document.getElementById("contable_" + form + "_" + usr).appendChild(url_cell);
-                                        var usr_cell = views[i].document.createElement("TD");
-                                        var usr_txt = views[i].document.createTextNode(usr);
-                                        usr_cell.appendChild(usr_txt);
-                                        views[i].document.getElementById("contable_" + form + "_" + usr).appendChild(usr_cell);
-                                        var delete_cell = views[i].document.createElement("TD");
-                                        var delete_button = views[i].document.createElement("BUTTON");
-                                        var delete_txt = views[i].document.createTextNode("Forget");
-                                        delete_button.appendChild(delete_txt);
-                                        delete_button.onclick = function(){
-                                            // we need to update fileContent and update server!
-                                            if (confirm("Delete " + usr + " details for " + url + "?")){
-                                                delete fileContent[url][form][usr];
-                                                if (!fileContent[url][form] || JSON.stringify(fileContent[url][form] === "{}")){
-                                                    delete fileContent[url][form];
-                                                    if (!fileContent[url] || JSON.stringify(fileContent[url] === "{}")){
-                                                        delete fileContent[url];
-                                                    }
-                                                }
-                                                save_details();
-                                            }
-                                        };
-                                        delete_button.style.background = "DARKRED";
-                                        delete_cell.appendChild(delete_button);
-                                        views[i].document.getElementById("contable_" + form + "_" + usr).appendChild(delete_cell);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else{
-                        views[i].document.getElementById("table").innerHTML = "No details to show yet!";
-                    }
-                }
+                x += 1;
+                x %= 2;
+                chrome.runtime.sendMessage({
+                    request: 'details_button',
+                    x: x
+                });
             };
 
             views[i].document.getElementById("save-details").onclick = function () {
