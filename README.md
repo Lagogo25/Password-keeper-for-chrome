@@ -1,6 +1,6 @@
 # Password keeper for chrome
 
-Use this chrome extension to save all of your web accounts details encrypted on a node server.
+Use this chrome extension to save all of your web accounts details encrypted on a node server running as an Amazon AWS EC2 instance.
 
 ## Getting Started
 
