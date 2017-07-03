@@ -18,7 +18,7 @@ var save_form = undefined;
 
 // var fileName = "";
 var fileContent = {}; // will be updated whenever needed
-var socket = io('http://54.88.99.33:1337');
+var socket = io('http://52.23.199.193:1337');
 
 
 function save_details(){
