@@ -22,7 +22,8 @@ var url = document.URL.split("/"); // will NEED to use to save to file
 url = url[0] + "//" + url[2] + "/"; // url[1] = '' !!! (http:// or https://)
 var passwords = document.querySelectorAll("input[type=password]"); // all input fields of type password in page
 if (Object.keys(passwords).length === 0){
-    chrome.runtime.sendMessage({request: 'save_details', url: url});
+    if (url)
+        chrome.runtime.sendMessage({request: 'save_details', url: url});
 }
 else {
     var parents = [];
@@ -46,7 +47,7 @@ else {
                             break;
                         }
                     }
-                    if (!uname && !password) {
+                    if (!uname && !password) { // happens a lot on social networks!!
                         for (var k = 0; k < parents.length; k++) {
                             if (parents[k] !== parent) {
                                 inputs = parents[k].querySelectorAll("input[type=text], input[type=email], input[type=password]"); // all inputs in form which are text/email
@@ -67,12 +68,13 @@ else {
                 });
                 // should auto fill form!!!
                 if (fileContent) {
-                    // alert(JSON.stringify(fileContent) + "\n" + url + "\t\t" + parent.id + "\t\t" + i); // just to see that it works!
                     if (fileContent && fileContent[url] && fileContent[url][parent.id]) {
                         var users = fileContent[url][parent.id];
-                        //alert(JSON.stringify(users));
-                        var inputs = parent.querySelectorAll("input[type=text], input[type=email], input[type=password]"); // all inputs in form which are text/email
+                        // get all fields inside form which are text/emails/passwords
+                        var inputs = parent.querySelectorAll("input[type=text], input[type=email], input[type=password]");
+                        // create a list of available users for input
                         for (var j = 0; j < Object.keys(inputs).length - 1; j++) {
+                            // if current field is not a password and next one is, we are probably where we want to be
                             if (inputs[j].type !== 'password' && inputs[j + 1].type === 'password') {
                                 var dlist = document.createElement("DATALIST");
                                 dlist.setAttribute("id", "datalist");
@@ -91,8 +93,12 @@ else {
                                     document.getElementById("datalist").appendChild(option);
                                 }
                                 inputs[j].setAttribute("list", "datalist");
+                                // auto fill with first name saved for the website
+                                inputs[j].value = Object.keys(users)[0];
+                                inputs[j+1].value = users[inputs[j].value];
                                 inputs[j].focus();
                                 inputs[j].onblur = function () {
+                                    // once user moves from user name field, password will fill automatically
                                     if (users[inputs[j].value])
                                         inputs[j + 1].value = users[inputs[j].value];
                                 };
