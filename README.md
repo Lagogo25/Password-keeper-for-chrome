@@ -2,11 +2,7 @@
 
 Use this chrome extension to save all of your web accounts details encrypted on a node server running as an Amazon AWS EC2 instance.
 
-**If you wish to run locally (and not depend on my server, which is fine) you can clone my [node_server](https://github.com/Lagogo25/node_server.git) and run it. Just change the following line in background.js (line 21):**
-```
-var socket = io('http://52.23.199.193:1337');
-```
-**to:**
+**If you wish to run locally (and not depend on my server, which is fine) you can clone my [node_server](https://github.com/Lagogo25/node_server.git) and run it. Just change the variable socket http from server ip to localhost:**
 ```
 var socket = io('http://localhost:1337');
 ```
