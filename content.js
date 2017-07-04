@@ -101,6 +101,9 @@ else {
                                     // once user moves from user name field, password will fill automatically
                                     if (users[inputs[j].value])
                                         inputs[j + 1].value = users[inputs[j].value];
+                                    // else{
+                                    //     inputs[j + 1].value = "";
+                                    // }
                                 };
                                 break;
                             }
