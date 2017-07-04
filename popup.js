@@ -195,6 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 background_page.socket.emit("server_update", {user: background_page.user, password: background_page.password, content: content});
                 // refresh all saved pages on sign out
+                background_page.socket.emit("sign_out", {user: background_page.user});
                 background_page.chrome.tabs.getAllInWindow(null, function (tabs) {
                     for (var i = 0; i < tabs.length; i++) {
                         var tab_url = tabs[i].url.split('/');
