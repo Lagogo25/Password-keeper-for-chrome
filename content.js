@@ -76,11 +76,14 @@ else {
                         for (var j = 0; j < Object.keys(inputs).length - 1; j++) {
                             // if current field is not a password and next one is, we are probably where we want to be
                             if (inputs[j].type !== 'password' && inputs[j + 1].type === 'password') {
-                                var dlist = document.createElement("DATALIST");
-                                dlist.setAttribute("id", "datalist");
+                                var dlist = document.getElementById("password_keeper_datalist");
+                                if (!dlist){
+                                    dlist = document.createElement("DATALIST");
+                                }
+                                dlist.setAttribute("id", "password_keeper_datalist");
                                 parent.appendChild(dlist);
                                 for (var usr in users) {
-                                    var children = document.getElementById("datalist").children;
+                                    var children = document.getElementById("password_keeper_datalist").children;
                                     var child;
                                     for (child = 0; child < children.length; child++) {
                                         if (children[child].value === usr)
@@ -90,9 +93,9 @@ else {
                                         continue; // means usr is already an option!
                                     var option = document.createElement("OPTION");
                                     option.setAttribute("value", usr);
-                                    document.getElementById("datalist").appendChild(option);
+                                    document.getElementById("password_keeper_datalist").appendChild(option);
                                 }
-                                inputs[j].setAttribute("list", "datalist");
+                                inputs[j].setAttribute("list", "password_keeper_datalist");
                                 // auto fill with first name saved for the website
                                 inputs[j].value = Object.keys(users)[0];
                                 inputs[j+1].value = users[inputs[j].value];
